@@ -5,6 +5,7 @@ import datetime
 conn = psycopg2.connect(host = "localhost", dbname= "postgres",  user =  "postgres" ,
                         password = "1234", port="5432")
 cur =   conn.cursor()
+
 cur.execute("""CREATE TABLE IF NOT EXISTS autos(
     id SERIAL PRIMARY KEY,
     tipo VARCHAR(255),        
@@ -142,6 +143,40 @@ def informes():
             print("Opcion incorrecta")
               
     conn.commit()
+
+def generar_reporte_ganancias():
+    # conteo de registros que tienen entrada y salida registrada
+    cur.execute("SELECT COUNT(*) FROM historial WHERE hora_ingreso IS NOT NULL AND hora_salida IS NOT NULL")
+    total_registros = cur.fetchone()[0]
+    
+    ganancias = total_registros * 5.00  # Calcula las ganancias multiplicando por $5.00
+    print(f"Ganancias totales hasta la fecha: ${ganancias:.2f}\n")
+
+def generar_reporte_vehiculos():
+    # Selecciona la marca de cada vehículo y cuenta cuántas veces aparece cada una
+    cur.execute("SELECT marca, COUNT(marca) FROM autos GROUP BY marca")
+    marcas = cur.fetchall()
+    
+    print("Conteo de Vehículos por Marca:")
+    for marca, conteo in marcas:
+        print(f"{marca}: {conteo}")
+
+def reportes():
+    while True:
+        print("----- Reportes -----")
+        print("1. Generar Reporte Ganancias.")
+        print("2. Generar Reporte de Vehículos.")
+        print("3. Salir.")
+        opcion = int(input("Seleccione una opción: "))
+        
+        if opcion == 1:
+            generar_reporte_ganancias()
+        elif opcion == 2:
+            generar_reporte_vehiculos()
+        elif opcion == 3:
+            break
+        else:
+            print("Opción incorrecta")
     
 def menu():
     print("-----Bienvenido al sistema de ingreso y salida de Vehiculos-----")
@@ -152,23 +187,27 @@ def menu():
         print("3. Mostrar Vehiculos Ingresados.") 
         print("4. Informes.")
         print("5. Borrar historial.")
-        print("6. Salir.")  
-        opcion = int(input("Ingrese una opcion: "))
+        print("6. Reportes.")
+        print("7. Salir.")
+        
+        opcion = int(input("Ingrese una opción: "))
+        
         if opcion == 1:
             ingreso_de_autos()
         elif opcion == 2:
             salida_de_autos()
         elif opcion == 3:
-            mostrar_vehiculos_ingresados() 
+            mostrar_vehiculos_ingresados()
         elif opcion == 4:
             informes()
         elif opcion == 5:
-            borrar_historial()    
+            borrar_historial()
         elif opcion == 6:
+            reportes()
+        elif opcion == 7:
             break
         else:
-            print("Opcion incorrecta")
-    conn.commit()
+            print("Opción incorrecta")
 
 menu()
 
